@@ -205,7 +205,7 @@ class GroupControllerTest extends TestCase
         $this->assertTrue(is_null($groupAfterDelete));
 
         // invalid group id
-        $response = $this->getBBApp()->getController()->handle(Request::create('/rest/1/group/13807548404/', 'DELETE'));
+        $response = $this->getBBApp()->getController()->handle(Request::create('/rest/1/group/13807548404', 'DELETE'));
         $this->assertEquals(404, $response->getStatusCode());
     }
 
