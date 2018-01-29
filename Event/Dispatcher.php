@@ -293,7 +293,7 @@ class Dispatcher extends EventDispatcher implements DumpableServiceInterface
             }
 
             array_unshift($listener, $callable);
-            call_user_func($listener, $event);
+            \call_user_func($listener, $event, $eventName, $this);
 
             if ($event->isPropagationStopped()) {
                 break;

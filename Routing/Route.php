@@ -50,10 +50,14 @@ class Route extends sfRoute
      * @param array  $defaults     An array of default parameter values
      * @param array  $requirements An array of requirements for parameters (regexes)
      * @param array  $options      An array of options
+     * @param string          $host         The host pattern to match
+     * @param string|string[] $schemes      A required URI scheme or an array of restricted schemes
+     * @param string|string[] $methods      A required HTTP method or an array of restricted methods
+     * @param string          $condition    A condition that should evaluate to true for the route to match
      */
-    public function __construct($pattern, array $defaults = array(), array $requirements = array(), array $options = array())
+    public function __construct($pattern, array $defaults = array(), array $requirements = array(), array $options = array(), $host = '', $schemes = array(), $methods = array(), $condition = '')
     {
-        parent::__construct($pattern, $defaults, $requirements, $options);
+        parent::__construct($pattern, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
 
         $this->_addHeaderRequirements();
     }

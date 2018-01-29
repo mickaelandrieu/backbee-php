@@ -56,6 +56,11 @@ class ClassContentListenerTest extends BackBeeTestCase
      */
     private static $renderer;
 
+    /**
+     * BackBee\Event\Dispatcher
+     */
+    private static $dispatcher;
+
     public static function setUpBeforeClass()
     {
         self::$kernel->resetDatabase();
@@ -69,6 +74,7 @@ class ClassContentListenerTest extends BackBeeTestCase
         self::$contentManager->setBBUserToken(self::$app->getSecurityContext()->getToken());
 
         self::$renderer = self::$app->getRenderer();
+        self::$dispatcher = self::$app->getEventDispatcher();
     }
 
     public static function tearDownAfterClass()
@@ -96,7 +102,7 @@ class ClassContentListenerTest extends BackBeeTestCase
         $request = Request::create('test', "GET");
         $response = Response::create(json_encode($data), 200, ['CONTENT_TYPE' => 'application/json']);
 
-        $listener->onPostCall($this->createPostResponseEvent($response, $request));
+        $listener->onPostCall($this->createPostResponseEvent($response, $request), self::POST_CALL_EVENT_NAME, self::$dispatcher);
 
         $this->assertEquals($response->getContent(), json_encode($data));
     }
@@ -118,7 +124,7 @@ class ClassContentListenerTest extends BackBeeTestCase
         $request = Request::create('test', "GET");
         $response = Response::create($data, 200, ['CONTENT_TYPE' => 'application/json']);
 
-        $listener->onPostCall($this->createPostResponseEvent($response, $request));
+        $listener->onPostCall($this->createPostResponseEvent($response, $request), self::POST_CALL_EVENT_NAME, self::$dispatcher);
 
         $responseContent = json_decode($response->getContent());
 
@@ -135,7 +141,7 @@ class ClassContentListenerTest extends BackBeeTestCase
         $request = Request::create('test', "GET");
         $response = Response::create($data, 200, ['CONTENT_TYPE' => 'application/json']);
 
-        $listener->onPostCall($this->createPostResponseEvent($response, $request));
+        $listener->onPostCall($this->createPostResponseEvent($response, $request), self::POST_CALL_EVENT_NAME, self::$dispatcher);
 
         $responseContent = json_decode($response->getContent());
 
@@ -159,7 +165,7 @@ class ClassContentListenerTest extends BackBeeTestCase
         $request = Request::create('test', "GET");
         $response = Response::create($data, 200, ['CONTENT_TYPE' => 'text/html']);
 
-        $listener->onPostCall($this->createPostResponseEvent($response, $request));
+        $listener->onPostCall($this->createPostResponseEvent($response, $request), self::POST_CALL_EVENT_NAME, self::$dispatcher);
 
         $responseContent = json_decode($response->getContent());
 
@@ -169,7 +175,6 @@ class ClassContentListenerTest extends BackBeeTestCase
     private function createPostResponseEvent($response, $request)
     {
         $postResponseEvent = new PostResponseEvent($response, $request);
-        $postResponseEvent->setDispatcher(self::$app->getEventDispatcher());
 
         return $postResponseEvent;
     }

@@ -31,6 +31,7 @@ use BackBee\Event\Event;
 use BackBee\Exception\BBException;
 use BackBee\Security\Exception\SecurityException;
 use BackBee\Utils\File\File;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Listener to ClassContent events :
@@ -49,12 +50,13 @@ class ClassContentListener
      * Occur on classcontent.include events.
      *
      * @param Event $event
+     * @param $eventName
+     * @param EventDispatcherInterface $eventDispatcher
      */
-    public static function onInclude(Event $event)
+    public static function onInclude(Event $event, $eventName, EventDispatcherInterface $eventDispatcher)
     {
-        $dispatcher = $event->getDispatcher();
-        if (null !== $dispatcher->getApplication()) {
-            if (null === $em = $dispatcher->getApplication()->getEntityManager()) {
+        if (null !== $eventDispatcher->getApplication()) {
+            if (null === $em = $eventDispatcher->getApplication()->getEntityManager()) {
                 return;
             }
 
@@ -82,18 +84,21 @@ class ClassContentListener
 
     /**
      * Occurs on classcontent.onflush events.
-     * 
+     *
      * @param Event $event
+     * @param $eventName
+     * @param EventDispatcherInterface $eventDispatcher
+     * @throws \BackBee\AutoLoader\Exception\ClassNotFoundException
+     * @throws \BackBee\ClassContent\Exception\UnknownPropertyException
      */
-    public static function onFlushContent(Event $event)
+    public static function onFlushContent(Event $event, $eventName, EventDispatcherInterface $eventDispatcher)
     {
         $content = $event->getTarget();
         if (!($content instanceof AbstractClassContent)) {
             return;
         }
 
-        $dispatcher = $event->getDispatcher();
-        $application = $dispatcher->getApplication();
+        $application = $eventDispatcher->getApplication();
         $em = $application->getEntityManager();
         $uow = $em->getUnitOfWork();
         if ($uow->isScheduledForInsert($content) || $uow->isScheduledForUpdate($content)) {
@@ -149,9 +154,13 @@ class ClassContentListener
      *
      * @param Event $event
      *
+     * @param $eventName
+     * @param EventDispatcherInterface $eventDispatcher
      * @throws BBException Occurs on illegal targeted object or missing BackBee Application
+     * @throws ClassContentException
+     * @throws SecurityException
      */
-    public static function onUpdate(Event $event)
+    public static function onUpdate(Event $event, $eventName, EventDispatcherInterface $eventDispatcher)
     {
         $content = $event->getTarget();
         if (!($content instanceof AbstractClassContent)) {
@@ -165,8 +174,7 @@ class ClassContentListener
             );
         }
 
-        $dispatcher = $event->getDispatcher();
-        if (null === $application = $dispatcher->getApplication()) {
+        if (null === $application = $eventDispatcher->getApplication()) {
             throw new BBException(
                 'Enable to update object',
                 BBException::MISSING_APPLICATION,
@@ -178,7 +186,7 @@ class ClassContentListener
             throw new SecurityException('Enable to update : unauthorized user', SecurityException::UNAUTHORIZED_USER);
         }
 
-        $em = $dispatcher->getApplication()->getEntityManager();
+        $em = $eventDispatcher->getApplication()->getEntityManager();
         if (null === $revision = $content->getDraft()) {
             if (null === $revision = $em->getRepository('BackBee\ClassContent\Revision')->getDraft($content, $token)) {
                 throw new ClassContentException('Enable to get draft', ClassContentException::REVISION_MISSING);
@@ -208,13 +216,14 @@ class ClassContentListener
 
     /**
      * Occurs on element.file.postremove events.
-     * 
+     *
      * @param Event $event
+     * @param $eventName
+     * @param EventDispatcherInterface $eventDispatcher
      */
-    public static function onRemoveElementFile(Event $event)
+    public static function onRemoveElementFile(Event $event, $eventName, EventDispatcherInterface $eventDispatcher)
     {
-        $dispatcher = $event->getDispatcher();
-        $application = $dispatcher->getApplication();
+        $application = $eventDispatcher->getApplication();
 
         try {
             $content = $event->getEventArgs()->getEntity();
@@ -238,17 +247,19 @@ class ClassContentListener
 
     /**
      * Occurs on rest.controller.classcontentcontroller.getAction.postcall events.
-     * 
+     *
      * @param Event $event
+     * @param $eventName
+     * @param EventDispatcherInterface $eventDispatcher
      */
-    public static function onPostCall(Event $event)
+    public static function onPostCall(Event $event, $eventName, EventDispatcherInterface $eventDispatcher)
     {
         $response = $event->getResponse();
         if ($response->headers->get('content-type') === 'text/html') {
             return;
         }
 
-        $application = $event->getApplication();
+        $application = $eventDispatcher->getApplication();
         $renderer = $application->getRenderer();
         $content = json_decode($response->getContent());
 

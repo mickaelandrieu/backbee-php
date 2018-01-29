@@ -174,7 +174,7 @@ class RouteCollection extends sfRouteCollection implements DumpableServiceInterf
     public function pushRouteCollection(array $routes)
     {
         foreach ($routes as $name => $route) {
-            if (!array_key_exists('pattern', $route) || !array_key_exists('defaults', $route)) {
+            if (!array_key_exists('path', $route) || !array_key_exists('defaults', $route)) {
                 $this->log('warning', sprintf('Unable to parse the route definition `%s`.', $name));
                 continue;
             }
@@ -351,14 +351,19 @@ class RouteCollection extends sfRouteCollection implements DumpableServiceInterf
         $this->rawRoutes[$name] = $route;
 
         $newRoute = new Route(
-                $route['pattern'],
-                $route['defaults'],
-                array_key_exists('requirements', $route) ? $route['requirements'] : []
+                $route['path'],
+                array_key_exists('defaults', $route) ? $route['defaults'] : [],
+                array_key_exists('requirements', $route) ? $route['requirements'] : [],
+                array_key_exists('options', $route) ? $route['options'] : [],
+                array_key_exists('host', $route) ? $route['host'] : '',
+                array_key_exists('schemes', $route) ? $route['schemes'] : [],
+                array_key_exists('methods', $route) ? $route['methods'] : ['GET'],
+                array_key_exists('condition', $route) ? $route['condition'] : ''
         );
 
         $this->add($name, $newRoute);
 
-        $this->log('debug', sprintf('Route `%s` with pattern `%s` defined.', $name, $route['pattern']));
+        $this->log('debug', sprintf('Route `%s` with path `%s` defined.', $name, $route['path']));
     }
 
     /**

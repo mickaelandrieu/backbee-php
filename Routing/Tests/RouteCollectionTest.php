@@ -146,9 +146,9 @@ class RouteCollectionTest extends BackBeeTestCase
     public function testRouteCollection()
     {
         $routes = [
-            'default' => ['pattern' => '/', 'defaults' => []],
-            'fake'    => ['pattern' => '/fake', 'defaults' => []],
-            'novalid' => ['pattern' => '/'],
+            'default' => ['path' => '/', 'defaults' => []],
+            'fake'    => ['path' => '/fake', 'defaults' => []],
+            'novalid' => ['path' => '/'],
         ];
 
         $routeCollection = new RouteCollection(self::$app);
@@ -162,7 +162,7 @@ class RouteCollectionTest extends BackBeeTestCase
     public function testGetUrlByRouteName()
     {
         $routes = [
-            'fake'    => ['pattern' => '/fake/{param1}/{param2}', 'defaults' => []],
+            'fake'    => ['path' => '/fake/{param1}/{param2}', 'defaults' => []],
         ];
 
         // Starting with a site without servername and simulate an HTTPS request
